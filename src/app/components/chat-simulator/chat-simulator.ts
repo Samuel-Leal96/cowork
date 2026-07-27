@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { OrderService } from '../../services/order.service';
+import { ConfigService } from '../../services/config.service';
 
 interface Message {
   id: number;
@@ -20,11 +21,9 @@ export class ChatSimulator implements AfterViewChecked {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   
   orderService = inject(OrderService);
+  configService = inject(ConfigService);
 
-  messages = signal<Message[]>([
-    { id: 1, text: "¡Hola! Bienvenido a Cowork 🌟. ¿En qué podemos ayudarte hoy?\n\n1️⃣ Edecanes\n2️⃣ Animación\n3️⃣ Mobiliario", sender: 'bot' }
-  ]);
-  
+  messages = signal<Message[]>([]);
   inputValue = signal<string>('');
   step = signal<number>(1);
   
@@ -35,6 +34,13 @@ export class ChatSimulator implements AfterViewChecked {
     schedule: ''
   };
 
+  pendingCustomScheduleLabel = '';
+
+  constructor() {
+    // Initialize with the dynamic welcome message
+    this.resetChat();
+  }
+
   ngAfterViewChecked() {
     this.scrollToBottom();
   }
@@ -43,6 +49,16 @@ export class ChatSimulator implements AfterViewChecked {
     try {
       this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
     } catch(err) { }
+  }
+
+  resetChat(): void {
+    this.messages.set([
+      { id: 1, text: this.configService.welcomeMessageFull(), sender: 'bot' }
+    ]);
+    this.step.set(1);
+    this.orderData = { service: '', city: '', business: '', schedule: '' };
+    this.pendingCustomScheduleLabel = '';
+    this.inputValue.set('');
   }
 
   handleSend(event?: Event) {
@@ -59,56 +75,85 @@ export class ChatSimulator implements AfterViewChecked {
     setTimeout(() => {
       let botReply = '';
       const currentStep = this.step();
+      const services = this.configService.services();
+      const msgs = this.configService.botMessages();
       
       if (currentStep === 1) {
-        if (['1','2','3'].includes(userMsg)) {
-          let serviceName = '';
-          if (userMsg === '1') serviceName = 'Edecanes';
-          if (userMsg === '2') serviceName = 'Animación';
-          if (userMsg === '3') serviceName = 'Mobiliario';
-          this.orderData.service = serviceName;
-
-          botReply = "¡Excelente elección! 📝 Por favor, dinos en qué ciudad requieres el servicio (Ej. Ciudad de México, Monterrey, etc.)";
+        // Check if user typed a valid service number
+        const optionNum = parseInt(userMsg, 10);
+        if (optionNum >= 1 && optionNum <= services.length) {
+          const selectedService = services[optionNum - 1];
+          this.orderData.service = selectedService.name;
+          botReply = msgs.cityPrompt;
           this.step.set(2);
         } else {
-          botReply = "Por favor, responde con el número de la opción deseada (1, 2 o 3).";
+          botReply = msgs.invalidServiceOption;
         }
       } else if (currentStep === 2) {
         this.orderData.city = userMsg;
-        botReply = `¡Perfecto! ¿En qué negocio, tienda o local se llevará a cabo el servicio? 🏬`;
+        botReply = msgs.businessPrompt;
         this.step.set(3);
       } else if (currentStep === 3) {
         this.orderData.business = userMsg;
-        botReply = `Entendido. ¿En qué rango de horario lo necesitas? ⏰ Responde con el número de la opción:\n\n1️⃣ Mañana (08:00 AM - 12:00 PM)\n2️⃣ Tarde (12:00 PM - 04:00 PM)\n3️⃣ Noche (04:00 PM - 08:00 PM)`;
+        botReply = this.configService.schedulePromptFull();
         this.step.set(4);
       } else if (currentStep === 4) {
-        if (['1','2','3'].includes(userMsg)) {
-           let scheduleName = '';
-           if (userMsg === '1') scheduleName = 'Mañana';
-           if (userMsg === '2') scheduleName = 'Tarde';
-           if (userMsg === '3') scheduleName = 'Noche';
+        const optionNum = parseInt(userMsg, 10);
+        const scheduleOpts = this.configService.scheduleOptions();
 
-           const newOrderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
-           
-           botReply = `¡Todo listo! Hemos registrado tu solicitud.\n\nTu número de orden es: *${newOrderId}*.\n\nPara confirmar tu pedido, por favor realiza tu pago y avísanos por este medio. 💳`;
-           this.step.set(5);
+        if (optionNum >= 1 && optionNum <= scheduleOpts.length) {
+          const selected = scheduleOpts[optionNum - 1];
 
-           this.orderService.addOrder({
-             id: newOrderId,
-             customerName: 'Cliente Nuevo',
-             phone: '+52 55 0000 0000',
-             city: this.orderData.city,
-             // business is skipped since it's not strictly in Order interface, or we can append it to city
-             service: `${this.orderData.service} (${scheduleName})`,
-             total: Math.floor(Math.random() * (8000 - 1500) + 1500),
-             status: 'Pendiente',
-             date: new Date().toISOString()
-           });
+          if (selected.type === 'custom') {
+            // Ask the user to type their specific time
+            this.pendingCustomScheduleLabel = selected.label;
+            botReply = `Has elegido "${selected.label}". ✍️ Por favor escribe la hora exacta.\n\nFormato: hora:minutos am/pm\nEjemplos: 10:25 am, 4:45 pm`;
+            this.step.set(4.5);
+          } else {
+            // Standard range — proceed to confirmation
+            const scheduleName = `${selected.label} (${selected.timeRange})`;
+            const newOrderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+            botReply = msgs.confirmationMessage.replace('{orderId}', newOrderId);
+            this.step.set(5);
+
+            this.orderService.addOrder({
+              id: newOrderId,
+              customerName: 'Cliente Nuevo',
+              phone: '+52 55 0000 0000',
+              city: this.orderData.city,
+              service: `${this.orderData.service} (${scheduleName})`,
+              total: Math.floor(Math.random() * (8000 - 1500) + 1500),
+              status: 'Pendiente',
+              date: new Date().toISOString()
+            });
+          }
         } else {
-           botReply = "Por favor, responde con el número de horario deseado (1, 2 o 3).";
+          botReply = msgs.invalidScheduleOption;
+        }
+      } else if (currentStep === 4.5) {
+        // Validate custom time format (light validation: digits + am/pm)
+        const timeRegex = /^\d{1,2}:\d{2}\s*(am|pm)$/i;
+        if (timeRegex.test(userMsg.trim())) {
+          const scheduleName = `${this.pendingCustomScheduleLabel} — ${userMsg.trim()}`;
+          const newOrderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+          botReply = msgs.confirmationMessage.replace('{orderId}', newOrderId);
+          this.step.set(5);
+
+          this.orderService.addOrder({
+            id: newOrderId,
+            customerName: 'Cliente Nuevo',
+            phone: '+52 55 0000 0000',
+            city: this.orderData.city,
+            service: `${this.orderData.service} (${scheduleName})`,
+            total: Math.floor(Math.random() * (8000 - 1500) + 1500),
+            status: 'Pendiente',
+            date: new Date().toISOString()
+          });
+        } else {
+          botReply = '⚠️ Formato no válido. Escribe la hora así: *10:25 am* o *4:45 pm*';
         }
       } else {
-        botReply = "Tu orden ya está en proceso. Un asesor te atenderá pronto si tienes más dudas.";
+        botReply = msgs.postOrderMessage;
       }
 
       this.messages.update(prev => [...prev, { id: Date.now(), text: botReply, sender: 'bot' }]);

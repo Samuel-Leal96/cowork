@@ -1,22 +1,263 @@
-<div class="glass animate-fade-in p-4 md:p-8 rounded-2xl min-h-[400px] bg-[#181b28]/70 backdrop-blur-md border border-[#ffffff0d]">
-  <h2 class="text-white text-xl md:text-2xl mb-6 font-semibold">Configuración del Sistema</h2>
-  
-  <div class="flex flex-col gap-6">
-    <div class="p-4 md:p-6 bg-white/5 rounded-xl border border-[#ffffff0d]">
-      <h3 class="text-white mb-4 text-lg font-medium">🤖 Respuestas del Bot</h3>
-      <p class="text-gray-400 text-sm mb-4">Modifica los mensajes que envía el asistente virtual por WhatsApp.</p>
-      <button class="w-full md:w-auto px-4 py-2 bg-fuchsia-500 hover:bg-fuchsia-600 text-white rounded-lg font-medium transition-colors opacity-70 cursor-not-allowed">
-        Editar Mensajes (Próximamente)
-      </button>
+<div class="flex flex-col gap-6 animate-fade-in">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 md:p-6 bg-[#181b28]/70 backdrop-blur-md rounded-xl border border-[#ffffff0d]">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">⚙️</span>
+      <h2 class="m-0 text-white text-lg md:text-xl">Configuración del Sistema</h2>
+    </div>
+    <button 
+      class="text-sm px-4 py-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors border border-[#ffffff0d]"
+      (click)="resetAll()"
+    >
+      🔄 Restaurar valores por defecto
+    </button>
+  </div>
+
+  <!-- ==================== BOT MESSAGES ==================== -->
+  <div class="p-4 md:p-6 bg-[#181b28]/70 backdrop-blur-md rounded-xl border border-[#ffffff0d]">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-white text-lg font-medium m-0 mb-1">🤖 Respuestas del Bot</h3>
+        <p class="text-gray-500 text-sm m-0">Modifica los mensajes que envía el asistente de WhatsApp.</p>
+      </div>
     </div>
 
-    <div class="p-4 md:p-6 bg-white/5 rounded-xl border border-[#ffffff0d]">
-      <h3 class="text-white mb-4 text-lg font-medium">📋 Catálogo de Servicios</h3>
-      <p class="text-gray-400 text-sm mb-4">Agrega o elimina los servicios que se muestran en el menú principal.</p>
-      <button class="w-full md:w-auto px-4 py-2 bg-fuchsia-500 hover:bg-fuchsia-600 text-white rounded-lg font-medium transition-colors opacity-70 cursor-not-allowed">
-        Gestionar Servicios (Próximamente)
+    <div class="flex flex-col gap-5">
+      <!-- Welcome Message -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Mensaje de Bienvenida</label>
+        <textarea 
+          class="w-full bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-4 py-3 text-white text-sm resize-y min-h-[80px] focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+          [ngModel]="editMessages().welcome"
+          (ngModelChange)="updateField('welcome', $event)"
+          placeholder="Mensaje de bienvenida..."
+        ></textarea>
+        <p class="text-xs text-gray-600 mt-1">Este mensaje se muestra al iniciar la conversación, seguido de la lista de servicios.</p>
+      </div>
+
+      <!-- City Prompt -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Pregunta de Ciudad</label>
+        <textarea 
+          class="w-full bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-4 py-3 text-white text-sm resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+          [ngModel]="editMessages().cityPrompt"
+          (ngModelChange)="updateField('cityPrompt', $event)"
+          placeholder="Pregunta de ciudad..."
+        ></textarea>
+      </div>
+
+      <!-- Business Prompt -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Pregunta de Negocio / Local</label>
+        <textarea 
+          class="w-full bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-4 py-3 text-white text-sm resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+          [ngModel]="editMessages().businessPrompt"
+          (ngModelChange)="updateField('businessPrompt', $event)"
+          placeholder="Pregunta de negocio..."
+        ></textarea>
+      </div>
+
+      <!-- Schedule Prompt -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Pregunta de Horario</label>
+        <textarea 
+          class="w-full bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-4 py-3 text-white text-sm resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+          [ngModel]="editMessages().schedulePrompt"
+          (ngModelChange)="updateField('schedulePrompt', $event)"
+          placeholder="Pregunta de horario..."
+        ></textarea>
+      </div>
+
+      <!-- Schedule Options (Editable list) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-3">Opciones de Horario</label>
+        <div class="flex flex-col gap-2 mb-4">
+          @for (option of configService.scheduleOptions(); track option.id; let i = $index) {
+            <div class="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-[#ffffff0d] group hover:bg-white/[0.07] transition-colors">
+              <!-- Number badge -->
+              <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0"
+                [class]="option.type === 'custom' ? 'bg-amber-500/15 text-amber-400' : 'bg-fuchsia-500/15 text-fuchsia-400'">
+                {{ i + 1 }}
+              </span>
+
+              @if (option.type === 'range') {
+                <!-- Range: label + time range -->
+                <input
+                  type="text"
+                  class="flex-1 min-w-0 bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+                  [ngModel]="option.label"
+                  (ngModelChange)="updateScheduleOption(option.id, 'label', $event)"
+                  placeholder="Nombre (ej. Mañana)"
+                />
+                <input
+                  type="text"
+                  class="flex-1 min-w-0 bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+                  [ngModel]="option.timeRange"
+                  (ngModelChange)="updateScheduleOption(option.id, 'timeRange', $event)"
+                  placeholder="Rango (ej. 08:00 AM - 12:00 PM)"
+                />
+              } @else {
+                <!-- Custom: label only with format hint -->
+                <input
+                  type="text"
+                  class="flex-1 min-w-0 bg-[#0f111a] border border-amber-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 placeholder-gray-600 transition-colors"
+                  [ngModel]="option.label"
+                  (ngModelChange)="updateScheduleOption(option.id, 'label', $event)"
+                  placeholder="Nombre (ej. Personalizado)"
+                />
+                <span class="text-xs text-amber-400/70 flex-shrink-0 hidden sm:block">⌨️ El usuario escribe la hora</span>
+              }
+
+              <!-- Delete button -->
+              <button 
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors flex-shrink-0"
+                (click)="removeScheduleOption(option.id)"
+                [disabled]="configService.scheduleOptions().length <= 1"
+                [class.opacity-30]="configService.scheduleOptions().length <= 1"
+                [class.cursor-not-allowed]="configService.scheduleOptions().length <= 1"
+                title="Eliminar opción"
+              >
+                🗑️
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Add buttons -->
+        <div class="flex flex-wrap gap-2">
+          <button 
+            class="px-4 py-2 text-sm rounded-lg bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 transition-colors border border-[#ffffff0d] flex items-center gap-2"
+            (click)="addScheduleRange()"
+          >
+            <span>➕</span> Agregar rango
+          </button>
+          <button 
+            class="px-4 py-2 text-sm rounded-lg bg-amber-500/10 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 transition-colors border border-amber-500/20 flex items-center gap-2"
+            (click)="addCustomSchedule()"
+          >
+            <span>⌨️</span> Agregar opción personalizada
+          </button>
+        </div>
+
+        <p class="text-xs text-gray-600 mt-3">Las opciones se enumeran automáticamente en el bot. La opción <strong class="text-amber-400/80">personalizada</strong> pide al usuario escribir su hora (formato: <code class="text-amber-400">10:25 am</code> o <code class="text-amber-400">4:45 pm</code>).</p>
+
+        @if (schedulesChanged()) {
+          <div class="mt-2">
+            <span class="text-emerald-400 text-sm font-medium animate-fade-in">✓ Opciones de horario actualizadas</span>
+          </div>
+        }
+      </div>
+
+      <!-- Confirmation Message -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Mensaje de Confirmación</label>
+        <textarea 
+          class="w-full bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-4 py-3 text-white text-sm resize-y min-h-[80px] focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+          [ngModel]="editMessages().confirmationMessage"
+          (ngModelChange)="updateField('confirmationMessage', $event)"
+          placeholder="Mensaje de confirmación..."
+        ></textarea>
+        <p class="text-xs text-gray-600 mt-1">Usa <code class="text-fuchsia-400">{{ '{' }}orderId{{ '}' }}</code> para insertar el número de orden automáticamente.</p>
+      </div>
+
+      <!-- Post Order Message -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Mensaje Post-Orden</label>
+        <textarea 
+          class="w-full bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-4 py-3 text-white text-sm resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+          [ngModel]="editMessages().postOrderMessage"
+          (ngModelChange)="updateField('postOrderMessage', $event)"
+          placeholder="Mensaje post-orden..."
+        ></textarea>
+        <p class="text-xs text-gray-600 mt-1">Se envía cuando el cliente escribe después de crear su orden.</p>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="flex items-center gap-3 mt-6 pt-4 border-t border-[#ffffff0d]">
+      <button 
+        class="px-6 py-2.5 bg-fuchsia-500 hover:bg-fuchsia-600 text-white rounded-lg font-medium transition-all hover:shadow-lg hover:shadow-fuchsia-500/20 active:scale-[0.97]"
+        (click)="saveMessages()"
+      >
+        💾 Guardar Mensajes
       </button>
+      @if (messagesSaved()) {
+        <span class="text-emerald-400 text-sm font-medium animate-fade-in">✓ Mensajes guardados</span>
+      }
+    </div>
+  </div>
+
+  <!-- ==================== SERVICE CATALOG ==================== -->
+  <div class="p-4 md:p-6 bg-[#181b28]/70 backdrop-blur-md rounded-xl border border-[#ffffff0d]">
+    <div class="mb-6">
+      <h3 class="text-white text-lg font-medium m-0 mb-1">📋 Catálogo de Servicios</h3>
+      <p class="text-gray-500 text-sm m-0">Agrega o elimina servicios que se muestran en el menú del bot.</p>
+    </div>
+
+    <!-- Current services list -->
+    <div class="flex flex-col gap-2 mb-6">
+      @for (service of configService.services(); track service.id; let i = $index) {
+        <div class="flex items-center justify-between p-3 md:p-4 bg-white/5 rounded-xl border border-[#ffffff0d] group hover:bg-white/[0.07] transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-lg bg-fuchsia-500/15 text-fuchsia-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
+              {{ i + 1 }}
+            </span>
+            <span class="text-white font-medium">{{ service.name }}</span>
+          </div>
+          <button 
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+            [class.opacity-100]="true"
+            (click)="removeService(service.id)"
+            title="Eliminar servicio"
+          >
+            🗑️
+          </button>
+        </div>
+      }
+      @if (configService.services().length === 0) {
+        <div class="p-6 text-center text-gray-500 bg-white/5 rounded-xl border border-dashed border-[#ffffff1a]">
+          No hay servicios configurados. Agrega al menos uno.
+        </div>
+      }
+    </div>
+
+    <!-- Add new service -->
+    <form class="flex gap-2" (submit)="addService(); $event.preventDefault()">
+      <input 
+        type="text"
+        class="flex-1 bg-[#0f111a] border border-[#ffffff1a] rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-600 transition-colors"
+        [ngModel]="newServiceName()"
+        (ngModelChange)="newServiceName.set($event)"
+        name="newService"
+        placeholder="Nombre del nuevo servicio..."
+      />
+      <button 
+        type="submit"
+        class="px-4 py-2.5 bg-fuchsia-500 hover:bg-fuchsia-600 text-white rounded-lg font-medium transition-all hover:shadow-lg hover:shadow-fuchsia-500/20 active:scale-[0.97] flex-shrink-0 flex items-center gap-2"
+        [disabled]="!newServiceName().trim()"
+        [class.opacity-50]="!newServiceName().trim()"
+        [class.cursor-not-allowed]="!newServiceName().trim()"
+      >
+        <span>➕</span>
+        <span class="hidden sm:inline">Agregar</span>
+      </button>
+    </form>
+
+    @if (servicesChanged()) {
+      <div class="mt-4">
+        <span class="text-emerald-400 text-sm font-medium animate-fade-in">✓ Catálogo actualizado — los cambios se reflejan en el simulador</span>
+      </div>
+    }
+  </div>
+
+  <!-- Info Card -->
+  <div class="p-4 md:p-5 bg-blue-500/5 rounded-xl border border-blue-500/20 flex items-start gap-3">
+    <span class="text-xl flex-shrink-0">💡</span>
+    <div>
+      <p class="text-blue-300 text-sm m-0 font-medium mb-1">¿Cómo funcionan los cambios?</p>
+      <p class="text-gray-400 text-sm m-0">
+        Los mensajes del bot y los servicios se reflejan en tiempo real en el <strong class="text-white">Simulador de WhatsApp</strong> del Dashboard. 
+        Cuando modifiques los mensajes, haz clic en "Guardar Mensajes". Los servicios se actualizan automáticamente.
+      </p>
     </div>
   </div>
 </div>
-
