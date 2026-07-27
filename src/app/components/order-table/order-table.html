@@ -1,4 +1,46 @@
-<div class="glass animate-fade-in [animation-delay:200ms] rounded-xl bg-[#181b28]/70 backdrop-blur-md border border-[#ffffff0d] overflow-hidden">
+<!-- Mobile Card View -->
+<div class="md:hidden flex flex-col gap-3 animate-fade-in [animation-delay:200ms]">
+  <div class="flex justify-between items-center mb-2">
+    <h3 class="text-lg font-semibold text-white m-0">Órdenes Recientes</h3>
+    <button mat-flat-button color="primary" class="text-sm">Ver Todas</button>
+  </div>
+
+  @for (order of orderService.orders(); track order.id) {
+    <div class="p-4 rounded-xl bg-[#181b28]/70 backdrop-blur-md border border-[#ffffff0d] hover:bg-white/5 transition-colors">
+      <div class="flex justify-between items-start mb-3">
+        <div class="flex-1">
+          <p class="font-medium text-white m-0 text-sm">{{order.customerName}}</p>
+          <p class="text-xs text-gray-500 m-0 mt-0.5">{{order.phone}}</p>
+        </div>
+        <span class="text-xs font-mono text-gray-500">{{order.id}}</span>
+      </div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded-md">{{order.service}}</span>
+      </div>
+      <div class="flex items-center gap-2 mb-3 text-xs text-gray-400">
+        <span>📍 {{order.city}}</span>
+        <span>•</span>
+        <span>{{order.date | date:'dd MMM yyyy'}}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-white font-semibold">${{order.total | number:'1.0-0'}}</span>
+        <select 
+          class="px-3 py-1.5 rounded-full text-xs font-semibold focus:ring-0 cursor-pointer appearance-none text-center"
+          [ngClass]="getStatusClass(order.status)"
+          [ngModel]="order.status"
+          (ngModelChange)="updateStatus(order.id, $event)"
+        >
+          <option class="bg-[#181b28] text-amber-500" value="Pendiente">Pendiente</option>
+          <option class="bg-[#181b28] text-emerald-500" value="Pagado">Pagado</option>
+          <option class="bg-[#181b28] text-blue-500" value="Completado">Completado</option>
+        </select>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Desktop Table View -->
+<div class="hidden md:block glass animate-fade-in [animation-delay:200ms] rounded-xl bg-[#181b28]/70 backdrop-blur-md border border-[#ffffff0d] overflow-hidden">
   <div class="flex justify-between items-center p-6 border-b border-[#ffffff0d]">
     <h3 class="text-xl font-semibold text-white m-0">Órdenes Recientes</h3>
     <button mat-flat-button color="primary">Ver Todas</button>

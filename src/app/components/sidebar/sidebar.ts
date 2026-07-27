@@ -5,14 +5,13 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   selector: 'app-sidebar',
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.scss'
+  styleUrl: './sidebar.scss',
 })
 export class Sidebar {
   menuItems = [
     { name: 'Dashboard', icon: '📊', route: '/dashboard' },
     { name: 'Ingresos', icon: '📈', route: '/ingresos' },
-    { name: 'Órdenes', icon: '📝', route: '/dashboard' }, // Assuming it maps to Dashboard based on React App.jsx
     { name: 'Clientes', icon: '👥', route: '/clientes' },
-    { name: 'Configuración', icon: '⚙️', route: '/configuracion' }
+    { name: 'Configuración', icon: '⚙️', route: '/configuracion' },
   ];
 }

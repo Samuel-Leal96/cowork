@@ -1,15 +1,99 @@
-<div class="flex h-screen overflow-hidden">
-  <app-sidebar></app-sidebar>
+<div class="flex h-screen md:overflow-hidden">
+  <!-- Desktop Sidebar (hidden on mobile) -->
+  <div class="hidden md:block">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <!-- Mobile Drawer Overlay -->
+  @if (isMobileMenuOpen()) {
+    <div class="fixed inset-0 z-[100] md:hidden" (click)="closeMobileMenu()">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+      <!-- Drawer -->
+      <aside 
+        class="absolute left-0 top-0 h-full w-[280px] bg-[#1a1b23]/95 backdrop-blur-md border-r border-[#ffffff1a] flex flex-col py-6 px-4 z-10 animate-slide-in"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-center justify-between pb-8 border-b border-[#ffffff0d]">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600"></div>
+            <h2 class="text-xl font-semibold text-white tracking-tight">Cowork</h2>
+          </div>
+          <button 
+            class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+            (click)="closeMobileMenu()"
+          >
+            ✕
+          </button>
+        </div>
+        <nav class="flex flex-col gap-2 mt-8 flex-1">
+          @for (item of menuItems; track item.name) {
+            <a 
+              [routerLink]="item.route"
+              routerLinkActive="bg-fuchsia-500/10 text-fuchsia-400 border-l-4 border-fuchsia-500 rounded-r-lg rounded-l-none"
+              [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}"
+              class="flex items-center gap-4 py-3 px-4 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all font-medium cursor-pointer"
+              (click)="closeMobileMenu()"
+            >
+              <span class="icon">{{item.icon}}</span>
+              {{item.name}}
+            </a>
+          }
+        </nav>
+        <div class="pt-4 border-t border-[#ffffff0d]">
+          <div class="flex items-center gap-3 p-2">
+            <div class="w-10 h-10 rounded-full bg-[#242632] flex items-center justify-center font-bold text-fuchsia-500 border border-[#ffffff1a]">A</div>
+            <div>
+              <p class="text-sm font-semibold text-white m-0">Admin</p>
+              <p class="text-xs text-gray-400 m-0">dueña</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  }
+
+  <!-- Main Content -->
   <main class="flex-1 overflow-y-auto flex flex-col relative bg-[#0f111a]">
-    <div class="sticky top-0 z-50 bg-[#0f111a] border-b border-[#2a2e3f] p-6 pb-4">
-      <header class="mb-4">
-        <h1 class="text-white text-2xl mb-2">Panel Administrativo MVP</h1>
-        <p class="text-gray-400">Bienvenida. Aquí puedes gestionar las solicitudes recibidas por WhatsApp.</p>
+    <div class="sticky top-0 z-50 bg-[#0f111a] border-b border-[#2a2e3f] p-4 md:p-6 pb-3 md:pb-4">
+      <header class="mb-2 md:mb-4 flex items-center gap-3">
+        <!-- Hamburger button (mobile only) -->
+        <button 
+          class="md:hidden w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
+          (click)="toggleMobileMenu()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-white text-xl md:text-2xl mb-1 md:mb-2">Panel Administrativo MVP</h1>
+          <p class="text-gray-400 text-sm md:text-base">Bienvenida. Aquí puedes gestionar las solicitudes recibidas por WhatsApp.</p>
+        </div>
       </header>
     </div>
     
-    <div class="p-6">
+    <div class="p-4 md:p-6 pb-24 md:pb-6">
       <router-outlet></router-outlet>
     </div>
   </main>
 </div>
+
+<!-- Bottom Navigation Bar (mobile only) -->
+<nav class="fixed bottom-0 left-0 right-0 z-[90] md:hidden bg-[#1a1b23]/95 backdrop-blur-md border-t border-[#ffffff1a]" style="padding-bottom: env(safe-area-inset-bottom)">
+  <div class="flex items-center justify-around py-2">
+    @for (item of menuItems; track item.name) {
+      <a 
+        [routerLink]="item.route"
+        routerLinkActive="text-fuchsia-400"
+        [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}"
+        class="flex flex-col items-center gap-1 px-3 py-1.5 text-gray-500 hover:text-gray-300 transition-colors min-w-[60px]"
+      >
+        <span class="text-xl leading-none">{{item.icon}}</span>
+        <span class="text-[10px] font-medium">{{item.name}}</span>
+      </a>
+    }
+  </div>
+</nav>
