@@ -1,0 +1,23 @@
+<div class="glass animate-fade-in p-8 rounded-2xl min-h-[400px] bg-[#181b28]/70 backdrop-blur-md border border-[#ffffff0d]">
+  <h2 class="text-white text-2xl mb-4 font-semibold">Directorio de Clientes</h2>
+  <p class="text-gray-400 mb-8">
+    Aquí aparecerá la lista de todos los clientes que han interactuado con el bot de WhatsApp.
+  </p>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @for (i of [1, 2, 3]; track i) {
+      <div class="p-6 bg-white/5 rounded-xl border border-[#ffffff0d] hover:bg-white/10 transition-colors">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-10 h-10 rounded-full bg-fuchsia-500 flex items-center justify-center text-white font-bold shadow-lg shadow-fuchsia-500/20">
+            C{{i}}
+          </div>
+          <div>
+            <h4 class="text-white m-0 font-medium">Cliente de Ejemplo {{i}}</h4>
+            <p class="text-gray-400 m-0 text-xs">+52 55 0000 000{{i}}</p>
+          </div>
+        </div>
+        <p class="text-gray-400 text-sm m-0">Último servicio: Edecanes</p>
+      </div>
+    }
+  </div>
+</div>

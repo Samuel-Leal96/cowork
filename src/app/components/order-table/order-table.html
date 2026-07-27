@@ -1,0 +1,79 @@
+<div class="glass animate-fade-in [animation-delay:200ms] rounded-xl bg-[#181b28]/70 backdrop-blur-md border border-[#ffffff0d] overflow-hidden">
+  <div class="flex justify-between items-center p-6 border-b border-[#ffffff0d]">
+    <h3 class="text-xl font-semibold text-white m-0">Órdenes Recientes</h3>
+    <button mat-flat-button color="primary">Ver Todas</button>
+  </div>
+  
+  <div class="overflow-x-auto w-full">
+    <table mat-table [dataSource]="orderService.orders()" class="w-full bg-transparent">
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef class="text-gray-400 bg-transparent border-b border-[#ffffff0d]"> ID Orden </th>
+        <td mat-cell *matCellDef="let order" class="font-mono text-gray-400 border-b border-[#ffffff0d]"> {{order.id}} </td>
+      </ng-container>
+
+      <!-- Customer Column -->
+      <ng-container matColumnDef="customer">
+        <th mat-header-cell *matHeaderCellDef class="text-gray-400 bg-transparent border-b border-[#ffffff0d]"> Cliente </th>
+        <td mat-cell *matCellDef="let order" class="border-b border-[#ffffff0d]">
+          <div>
+            <p class="font-medium text-white m-0">{{order.customerName}}</p>
+            <p class="text-xs text-gray-400 m-0">{{order.phone}}</p>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Service Column -->
+      <ng-container matColumnDef="service">
+        <th mat-header-cell *matHeaderCellDef class="text-gray-400 bg-transparent border-b border-[#ffffff0d]"> Servicio </th>
+        <td mat-cell *matCellDef="let order" class="text-gray-300 border-b border-[#ffffff0d]"> {{order.service}} </td>
+      </ng-container>
+
+      <!-- City Column -->
+      <ng-container matColumnDef="city">
+        <th mat-header-cell *matHeaderCellDef class="text-gray-400 bg-transparent border-b border-[#ffffff0d]"> Ciudad </th>
+        <td mat-cell *matCellDef="let order" class="border-b border-[#ffffff0d]">
+          <div>
+            <p class="font-medium text-white m-0">{{order.city}}</p>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef class="text-gray-400 bg-transparent border-b border-[#ffffff0d]"> Fecha </th>
+        <td mat-cell *matCellDef="let order" class="text-sm text-gray-400 border-b border-[#ffffff0d]"> 
+          {{order.date | date:'dd MMM yyyy, HH:mm'}} 
+        </td>
+      </ng-container>
+
+      <!-- Total Column -->
+      <ng-container matColumnDef="total">
+        <th mat-header-cell *matHeaderCellDef class="text-gray-400 bg-transparent border-b border-[#ffffff0d]"> Total </th>
+        <td mat-cell *matCellDef="let order" class="font-medium text-white border-b border-[#ffffff0d]"> 
+          ${{order.total | number:'1.0-0'}} 
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef class="text-gray-400 bg-transparent border-b border-[#ffffff0d]"> Estatus </th>
+        <td mat-cell *matCellDef="let order" class="border-b border-[#ffffff0d]">
+          <select 
+            class="px-3 py-1.5 rounded-full text-xs font-semibold focus:ring-0 cursor-pointer appearance-none text-center min-w-[110px]"
+            [ngClass]="getStatusClass(order.status)"
+            [ngModel]="order.status"
+            (ngModelChange)="updateStatus(order.id, $event)"
+          >
+            <option class="bg-[#181b28] text-amber-500" value="Pendiente">Pendiente</option>
+            <option class="bg-[#181b28] text-emerald-500" value="Pagado">Pagado</option>
+            <option class="bg-[#181b28] text-blue-500" value="Completado">Completado</option>
+          </select>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-white/5 transition-colors"></tr>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="flex flex-col gap-6">
+  <div class="flex justify-between items-center p-6 bg-[#181b28]/70 backdrop-blur-md rounded-xl border border-[#ffffff0d]">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">📊</span>
+      <h2 class="m-0 text-white text-xl">Ingresos</h2>
+    </div>
+  </div>
+
+  <div class="flex gap-2 border-b border-[#ffffff0d] pb-2">
+    <button 
+      class="px-4 py-2 font-medium text-sm transition-colors relative"
+      [ngClass]="activeTab() === 'Resumen' ? 'text-fuchsia-400' : 'text-gray-400 hover:text-gray-200'"
+      (click)="activeTab.set('Resumen')"
+    >
+      Resumen
+      <div *ngIf="activeTab() === 'Resumen'" class="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-fuchsia-500"></div>
+    </button>
+    <button 
+      class="px-4 py-2 font-medium text-sm transition-colors relative"
+      [ngClass]="activeTab() === 'Servicios' ? 'text-fuchsia-400' : 'text-gray-400 hover:text-gray-200'"
+      (click)="activeTab.set('Servicios')"
+    >
+      Servicios
+      <div *ngIf="activeTab() === 'Servicios'" class="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-fuchsia-500"></div>
+    </button>
+    <button 
+      class="px-4 py-2 font-medium text-sm transition-colors relative"
+      [ngClass]="activeTab() === 'Ciudades' ? 'text-fuchsia-400' : 'text-gray-400 hover:text-gray-200'"
+      (click)="activeTab.set('Ciudades')"
+    >
+      Ciudades
+      <div *ngIf="activeTab() === 'Ciudades'" class="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-fuchsia-500"></div>
+    </button>
+  </div>
+
+  <div class="bg-[#181b28]/70 backdrop-blur-md p-6 rounded-xl border border-[#ffffff0d] animate-fade-in">
+    @if (activeTab() === 'Resumen') {
+      <!-- KPI box -->
+      <div class="mb-6 p-4 rounded-lg bg-white/5 inline-block border border-[#ffffff0d]">
+        <div class="text-sm text-gray-400 mb-1">Ingresos aproximados</div>
+        <h2 class="text-3xl text-emerald-400 m-0 font-bold">${{ totalIncome() | number:'1.2-2' }}</h2>
+      </div>
+
+      <!-- Chart + Sidebar layout (like Facebook) -->
+      <div class="flex gap-6 mt-4">
+        <!-- Line Chart -->
+        <div class="flex-1 flex flex-col">
+          <div class="h-[340px] relative">
+            <canvas baseChart
+              [data]="lineChartData()"
+              [options]="lineChartOptions"
+              [type]="'line'">
+            </canvas>
+          </div>
+
+          <!-- Custom Legend Buttons -->
+          <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#ffffff0d] justify-center">
+            @for (item of legendItems(); track item.index) {
+              <button 
+                class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer"
+                [ngClass]="hiddenDatasets().has(item.index) 
+                  ? 'bg-white/5 text-gray-500 border border-[#ffffff0d] opacity-50' 
+                  : 'bg-white/10 text-white border-2 shadow-sm'"
+                [ngStyle]="hiddenDatasets().has(item.index) ? {} : { 'border-color': item.color, 'box-shadow': '0 0 8px ' + item.color + '30' }"
+                (click)="toggleDataset(item.index)"
+              >
+                <span class="w-4 h-0.5 rounded-full inline-block" [ngStyle]="{ 'background-color': item.color }"></span>
+                {{ item.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Sidebar Breakdown -->
+        <div class="w-[220px] flex-shrink-0 flex flex-col gap-4 border-l border-[#ffffff0d] pl-6">
+          @for (item of serviceTotals(); track item.name) {
+            <div>
+              <p class="text-sm text-gray-400 m-0 mb-1">{{ item.name }}</p>
+              <h4 class="text-lg text-white m-0 font-semibold">${{ item.value | number:'1.2-2' }}</h4>
+            </div>
+          }
+          @if (serviceTotals().length === 0) {
+            <p class="text-gray-500 text-sm">Sin desglose.</p>
+          }
+        </div>
+      </div>
+    }
+    
+    @if (activeTab() === 'Servicios') {
+      <h3 class="text-white mt-0 mb-6 font-medium">Distribución de Ingresos por Servicio</h3>
+      <div class="h-[400px] relative">
+        <canvas baseChart
+          [data]="servicePieData()"
+          [options]="pieChartOptions"
+          [type]="'pie'">
+        </canvas>
+      </div>
+    }
+
+    @if (activeTab() === 'Ciudades') {
+      <h3 class="text-white mt-0 mb-6 font-medium">Ingresos por Ciudad</h3>
+      <div class="h-[400px] relative">
+        <canvas baseChart
+          [data]="cityBarData()"
+          [options]="barChartOptions"
+          [type]="'bar'">
+        </canvas>
+      </div>
+    }
+  </div>
+</div>

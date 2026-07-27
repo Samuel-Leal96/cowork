@@ -1,0 +1,30 @@
+<aside class="sidebar glass w-[260px] h-full flex flex-col py-6 px-4 border-r border-[#ffffff1a] bg-[#1a1b23]/60 backdrop-blur-md">
+  <div class="logo-container flex items-center gap-3 pb-8 border-b border-[#ffffff0d]">
+    <div class="logo-circle w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600"></div>
+    <h2 class="text-xl font-semibold text-white tracking-tight">Cowork</h2>
+  </div>
+  
+  <nav class="nav-menu flex flex-col gap-2 mt-8 flex-1">
+    @for (item of menuItems; track item.name) {
+      <a 
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}"
+        class="nav-item flex items-center gap-4 py-3 px-4 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all font-medium cursor-pointer"
+      >
+        <span class="icon">{{item.icon}}</span>
+        {{item.name}}
+      </a>
+    }
+  </nav>
+  
+  <div class="sidebar-footer pt-4 border-t border-[#ffffff0d]">
+    <div class="admin-profile flex items-center gap-3 p-2">
+      <div class="avatar w-10 h-10 rounded-full bg-[#242632] flex items-center justify-center font-bold text-fuchsia-500 border border-[#ffffff1a]">A</div>
+      <div>
+        <p class="name text-sm font-semibold text-white">Admin</p>
+        <p class="role text-xs text-gray-400">dueña</p>
+      </div>
+    </div>
+  </div>
+</aside>
